@@ -1,0 +1,11 @@
+version: '3.8'
+
+services:
+  app:
+    # there is diff between build and image is that to use local Dockerfile - use build and to use prebuilt image - use image
+    build: .
+    container_name: ai-workflow-task-container
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./src:/app/src
