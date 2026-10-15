@@ -5,7 +5,7 @@ import threading
 import time
 from typing import Any, Optional, Iterator, Union, overload, List, Dict
 
-import winsound
+from src.utils.sound import beep
 from openai import OpenAI, AsyncOpenAI
 
 from src.config.settings import OPEN_AI_API_KEY, OPENAI_TIMEOUT
@@ -1172,4 +1172,4 @@ if __name__ == "__main__":
         openai_integration.generate_text("What is the capital of France?", False)
     )  # Non-streaming response
 
-    winsound.Beep(4234, 1000)  # Beep to indicate start of OpenAI API call
+    beep(4234, 1000)  # Beep to indicate start of OpenAI API call

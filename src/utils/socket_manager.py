@@ -1,4 +1,7 @@
+import json
 import os
+import shlex
+import shutil
 import socket
 import subprocess
 import sys
@@ -73,6 +76,50 @@ class SocketManager:
         """Internal helper to always return a DebugMessageSender bound to current connection"""
         return DebugMessageSender(self._socket_con)
 
+    @staticmethod
+    def _spawn_in_new_window(script_path):
+        """Run `script_path` in its own console window.
+
+        Windows uses a new console; Linux tries the common terminal emulators;
+        macOS uses Terminal.app. When no window can be opened (headless,
+        Docker, SSH) the server runs in the background instead.
+        """
+        if os.name == "nt":
+            return subprocess.Popen(
+                [sys.executable, str(script_path)],
+                creationflags=subprocess.CREATE_NEW_CONSOLE,
+            )
+
+        if sys.platform == "darwin":
+            command = f"cd {shlex.quote(os.getcwd())} && {shlex.quote(sys.executable)} {shlex.quote(str(script_path))}"
+            return subprocess.Popen(
+                ["osascript", "-e", f'tell application "Terminal" to do script {json.dumps(command)}']
+            )
+
+        if os.environ.get("DISPLAY") or os.environ.get("WAYLAND_DISPLAY"):
+            terminals = [
+                ["gnome-terminal", "--"],
+                ["konsole", "-e"],
+                ["xfce4-terminal", "-x"],
+                ["x-terminal-emulator", "-e"],
+                ["xterm", "-e"],
+            ]
+            for terminal in terminals:
+                if shutil.which(terminal[0]):
+                    return subprocess.Popen(
+                        terminal + [sys.executable, str(script_path)]
+                    )
+
+        print(
+            "⚠️ No terminal window available; running log server in the background. "
+            "Set LOG_DISPLAY_MODE=file to keep its output."
+        )
+        return subprocess.Popen(
+            [sys.executable, str(script_path)],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+        )
+
     def start_log_server(self):
         """Start the log server as a subprocess"""
         if self._log_server_process is not None:
@@ -102,15 +149,9 @@ class SocketManager:
 
             if log_display_mode == "separate_window":
                 # Option 1: Separate console window (recommended)
-                if os.name == "nt":  # Windows
-                    self._log_server_process = subprocess.Popen(
-                        [sys.executable, error_transfer_path],
-                        creationflags=subprocess.CREATE_NEW_CONSOLE,
-                    )
-                else:  # Linux/Mac
-                    self._log_server_process = subprocess.Popen(
-                        ["gnome-terminal", "--", sys.executable, error_transfer_path]
-                    )
+                self._log_server_process = self._spawn_in_new_window(
+                    error_transfer_path
+                )
             elif log_display_mode == "background":
                 # Option 2: Background process (logs not visible)
                 self._log_server_process = subprocess.Popen(
@@ -123,6 +164,7 @@ class SocketManager:
                 log_file = (
                     settings.BASE_DIR / "basic_logs" / "error_log.txt"
                 )  # Fixed: should be src/basic_logs, not project_root/basic_logs
+                log_file.parent.mkdir(parents=True, exist_ok=True)
                 print(f"Log file exists: {log_file.exists()}, path: {log_file}")
                 with log_file.open("w") as f:
                     self._log_server_process = subprocess.Popen(
@@ -131,15 +173,9 @@ class SocketManager:
                 print(f"📝 Log server output will be written to: {log_file}")
             else:
                 # Default: Separate window
-                if os.name == "nt":  # Windows
-                    self._log_server_process = subprocess.Popen(
-                        [sys.executable, error_transfer_path],
-                        creationflags=subprocess.CREATE_NEW_CONSOLE,
-                    )
-                else:  # Linux/Mac
-                    self._log_server_process = subprocess.Popen(
-                        ["gnome-terminal", "--", sys.executable, error_transfer_path]
-                    )
+                self._log_server_process = self._spawn_in_new_window(
+                    error_transfer_path
+                )
 
             print(f"✅ Log server started with PID: {self._log_server_process.pid}")
 
@@ -216,9 +252,8 @@ class SocketManager:
 
                 # Also clean up any stale lock files
                 try:
-                    lock_file = (
-                        pathlib.Path(__file__).parent / ".." / ".." / "basic_logs" / "server.lock"
-                    )
+                    # Same location error_transfer.create_lock_file() writes to
+                    lock_file = settings.BASE_DIR / "basic_logs" / "server.lock"
                     if lock_file.exists():
                         lock_file.unlink()
                         print("🧹 Cleaned up server lock file")

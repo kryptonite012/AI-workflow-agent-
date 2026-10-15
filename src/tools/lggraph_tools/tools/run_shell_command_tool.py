@@ -42,7 +42,7 @@ def run_shell_command(command: str, creation_flag=False) -> str:
             text=True,
             encoding="utf-8",  # ✅ Explicit UTF-8 encoding
             errors="replace",  # ✅ Replace problematic characters instead of failing
-            creationflags=subprocess.CREATE_NEW_CONSOLE if creation_flag else 0,
+            creationflags=getattr(subprocess, "CREATE_NEW_CONSOLE", 0) if creation_flag else 0,  # Windows-only flag
         )
         stdout, stderr = process.communicate()
 

@@ -1,7 +1,7 @@
 [project]
-name = "ai-llm"
-version = "1.8.0"
-description = "Add your description here"
+name = "ai-workflow-agent"
+version = "1.9.1"
+description = "Desktop AI assistant with LangGraph agents, dynamic MCP integration and browser automation"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
@@ -119,14 +119,14 @@ dependencies = [
     "pypdf>=6.0.0",
     "pypika>=0.48.9",
     "pyproject-hooks>=1.2.0",
-    "pyreadline3>=3.5.4",
+    "pyreadline3>=3.5.4; sys_platform == 'win32'",
     "pytest>=9.0.2",
     "pytest-asyncio>=0.25.0",
     "python-dateutil>=2.9.0.post0",
     "python-dotenv>=1.1.1",
     "python-multipart>=0.0.20",
     "pytz>=2025.2",
-    "pywin32>=311",
+    "pywin32>=311; sys_platform == 'win32'",
     "pyyaml>=6.0.2",
     "referencing>=0.36.2",
     "requests>=2.32.5",

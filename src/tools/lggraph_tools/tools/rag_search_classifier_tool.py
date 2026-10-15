@@ -1,6 +1,6 @@
 import json
 
-import winsound
+from src.utils.sound import beep
 from rich.prompt import Prompt
 
 import src.prompts.rag_search_classifier_prompts
@@ -223,7 +223,7 @@ def rag_search_classifier_tool(query: str) -> str:
     and performs the search if supported.
     """
     if settings.ENABLE_SOUND_NOTIFICATIONS:
-        winsound.Beep(7200, 200)  # Play a sound to indicate the start of RAG search
+        beep(7200, 200)  # Play a sound to indicate the start of RAG search
     file_path = Prompt.ask(
         "Enter FILE PATH TO RAG SEARCH",
         default=str(settings.DEFAULT_RAG_EXAMPLE_FILE_PATH),
@@ -318,7 +318,7 @@ def rag_search_classifier_tool(query: str) -> str:
 
     if selected_rag_type == "knowledge_graph":
         if settings.ENABLE_SOUND_NOTIFICATIONS:
-            winsound.Beep(
+            beep(
                 7200, 200
             )  # Play a sound to indicate knowledge graph RAG search
         if (

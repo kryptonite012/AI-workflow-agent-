@@ -6,7 +6,6 @@ import sys
 import threading
 from pathlib import Path
 
-import winsound
 from anyio import sleep
 
 # Add project root to Python path
@@ -14,6 +13,7 @@ project_root = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(project_root))
 
 from src.config import settings
+from src.utils.sound import beep
 from src.ui.rich_error_print import RichErrorPrint
 from rich.console import Console
 
@@ -38,7 +38,7 @@ class SocketCon:
                 # Send the error message
                 else:
                     # print("Sending error message: ", error_message, flush=True, file=sys.stderr)
-                    # winsound.Beep(7933, 500)  # Beep sound for error notification
+                    # beep(7933, 500)  # Beep sound for error notification
                     self.client_socket.sendall(error_message.encode("utf-8"))
                 # self.client_socket.sendall(error_message.encode('utf-8'))
             except socket.error as e:
@@ -286,7 +286,7 @@ if __name__ == "__main__":
                         else:
                             print_error.print_rich(received_error)
                         if settings.ENABLE_SOUND_NOTIFICATIONS:
-                            winsound.Beep(7933, 500)  # Beep sound for error notification
+                            beep(7933, 500)  # Beep sound for error notification
                     # Don't exit the loop - continue listening for new connections
                     print_error.print_rich(
                         "Client disconnected, waiting for new connections..."

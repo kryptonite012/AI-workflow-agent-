@@ -1,4 +1,4 @@
-import winsound
+from src.utils.sound import beep
 from rich.align import Align
 from rich.panel import Panel
 
@@ -35,4 +35,4 @@ def print_message(msg: str, sender="user"):
     )
     console.print(panel)
     if settings.ENABLE_SOUND_NOTIFICATIONS:
-        winsound.Beep(7200, 200)  # Play a sound for new message
+        beep(7200, 200)  # Play a sound for new message
