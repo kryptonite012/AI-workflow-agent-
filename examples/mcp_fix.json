@@ -1,0 +1,169 @@
+{
+    "mcpServers": {
+        "github": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github@latest"
+            ],
+            "env": {
+                "GITHUB_TOKEN": "%GITHUB_TOKEN%"
+            },
+            "disabled": false,
+            "autoApprove": [
+                "search_repositories",
+                "get_file_contents",
+                "list_commits",
+                "list_issues",
+                "get_issue",
+                "list_pull_requests",
+                "get_pull_request",
+                "get_pull_request_files",
+                "get_pull_request_status",
+                "get_pull_request_comments",
+                "get_pull_request_reviews",
+                "create_repository",
+                "fork_repository",
+                "create_branch",
+                "create_issue",
+                "update_issue",
+                "add_issue_comment",
+                "create_pull_request",
+                "search_code",
+                "search_issues",
+                "search_users",
+                "create_or_update_file",
+                "push_files"
+            ]
+        },
+        "git": {
+            "command": "uvx",
+            "args": [
+                "mcp-server-git"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "git_log",
+                "git_status",
+                "git_diff",
+                "git_diff_unstaged",
+                "git_diff_staged",
+                "git_add",
+                "git_commit",
+                "git_reset",
+                "git_show",
+                "git_branch",
+                "git_checkout",
+                "git_create_branch",
+                "git_init"
+            ]
+        },
+        "filesystem": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem@latest",
+                "C:\\Users\\pirat\\PycharmProjects\\AI_llm"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "read_file",
+                "write_file",
+                "list_directory",
+                "create_directory",
+                "move_file",
+                "search_files",
+                "list_allowed_directories",
+                "directory_tree",
+                "read_text_file",
+                "read_multiple_files",
+                "edit_file",
+                "get_file_info",
+                "list_directory_with_sizes",
+                "read_media_file"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory@latest"
+            ],
+            "disabled": false,
+            "autoApprove": [
+                "create_memory",
+                "search_memories",
+                "list_memories",
+                "update_memory",
+                "delete_memory",
+                "create_entities",
+                "create_relations",
+                "add_observations",
+                "delete_entities",
+                "delete_observations",
+                "delete_relations",
+                "read_graph",
+                "search_nodes",
+                "open_nodes"
+            ]
+        },
+        "puppeteer": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer@latest"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "puppeteer_navigate",
+                "puppeteer_screenshot",
+                "puppeteer_click",
+                "puppeteer_fill",
+                "puppeteer_select",
+                "puppeteer_hover",
+                "puppeteer_evaluate"
+            ]
+        },
+        "sentry": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote@latest",
+                "https://mcp.sentry.dev/mcp"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "mcp_sentry_whoami",
+                "mcp_sentry_find_organizations",
+                "mcp_sentry_find_projects",
+                "mcp_sentry_find_teams",
+                "mcp_sentry_find_releases",
+                "mcp_sentry_get_issue_details",
+                "mcp_sentry_search_events",
+                "mcp_sentry_search_issues",
+                "mcp_sentry_find_dsns",
+                "mcp_sentry_update_issue",
+                "mcp_sentry_create_team",
+                "mcp_sentry_create_project",
+                "mcp_sentry_update_project",
+                "mcp_sentry_create_dsn",
+                "mcp_sentry_get_trace_details",
+                "mcp_sentry_get_event_attachment",
+                "mcp_sentry_analyze_issue_with_seer",
+                "mcp_sentry_search_docs",
+                "mcp_sentry_get_doc",
+                "whoami",
+                "find_organizations",
+                "search_issues",
+                "get_issue_details",
+                "update_issue",
+                "search_events",
+                "find_projects"
+            ]
+        }
+    }
+}
