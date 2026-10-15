@@ -186,7 +186,22 @@ class ChatInitializer:
             #     # Add more servers here as needed
             # ]
 
-            add_servers_config = McpConfigFile.retrieve_config()
+            mcp_config_path = settings.MCP_CONFIG["MCP_CONFIG_PATH"]
+            if not settings.MCP_CONFIG["MCP_ENABLED"]:
+                debug_info(
+                    heading="MCP Disabled",
+                    body="MCP_ENABLED=false, skipping MCP server startup.",
+                )
+                return
+            if not mcp_config_path.exists():
+                debug_warning(
+                    heading="MCP Config Missing",
+                    body=f"No MCP config at {mcp_config_path}; copy .mcp.example.json to .mcp.json to enable MCP tools.",
+                    metadata={"config_path": str(mcp_config_path)},
+                )
+                return
+
+            add_servers_config = McpConfigFile.retrieve_config() or []
 
             # add servers for list (that's working)
             for server_config in add_servers_config:

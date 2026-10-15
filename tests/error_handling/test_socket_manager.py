@@ -11,7 +11,7 @@ import time
 # Add the project root to the Python path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", ".."))
 
-from utils.socket_manager import socket_manager
+from src.utils.socket_manager import socket_manager
 
 
 def test_socket_manager_creation():

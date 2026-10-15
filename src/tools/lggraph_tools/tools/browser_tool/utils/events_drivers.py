@@ -59,11 +59,19 @@ class PreRequirementsCustomEvent(Handler):
     def check_internet(self):
         """Check internet connectivity."""
         import socket
+        import urllib.request
         try:
-            socket.create_connection(("8.8.8.8", 53), timeout=3)
+            socket.create_connection(("8.8.8.8", 53), timeout=3).close()
             print("✅ Internet connected")
             return {"internet": "connected"}
         except OSError:
+            pass
+        # Raw sockets are often blocked behind HTTP proxies; urllib honours HTTPS_PROXY
+        try:
+            urllib.request.urlopen("https://www.google.com", timeout=5).close()
+            print("✅ Internet connected (via HTTPS)")
+            return {"internet": "connected"}
+        except Exception:
             raise ConnectionError("Active internet connection required!")
 
     def check_ram(self):
@@ -856,8 +864,12 @@ class TeardownDriver(Handler):
         from src.config.settings import BROWSER_USE_TIMEOUT
         self.runner = runner_instance
         print("[DRIVER] Starting teardown... waiting for monitor system to actually tell us its decision ", flush=True)
-        self.runner.monitor_thread and self.runner.monitor_thread.join(timeout=BROWSER_USE_TIMEOUT)
-        self.runner.monitor_thread.is_alive() and print("[DRIVER] Monitor thread is still alive after timeout, proceeding with teardown.", flush=True)
+        # monitor_thread only exists in keep_alive mode
+        monitor_thread = getattr(self.runner, "monitor_thread", None)
+        if monitor_thread is not None:
+            monitor_thread.join(timeout=BROWSER_USE_TIMEOUT)
+            if monitor_thread.is_alive():
+                print("[DRIVER] Monitor thread is still alive after timeout, proceeding with teardown.", flush=True)
 
     async def __emit_kill_browser_event(self):
         """

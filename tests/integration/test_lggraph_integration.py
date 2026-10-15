@@ -15,7 +15,7 @@ if str(project_root) not in sys.path:
 
 import time
 
-from utils.socket_manager import socket_manager
+from src.utils.socket_manager import socket_manager
 
 from src.config import settings
 
