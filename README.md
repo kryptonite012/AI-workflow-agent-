@@ -101,8 +101,9 @@ If you remember only *one* picture, remember this:
 | 🔌 **MCP** | ✅ | Dynamic via `.mcp.json` |
 | 🤖 **Agent Mode** | ✅ | Reliable parameter generation |
 | 🌐 **Browser** | ✅ | browser-use integration |
-| 🐳 **Docker** | ⏳ | Dockerfile ready, compose WIP |
-| 🐍 **Python** | 3.13+ | Legacy 3.11 supported |
+| 🐳 **Docker** | ✅ | `docker compose run --rm app` |
+| 🐧 **Platforms** | ✅ | Windows, Linux, macOS |
+| 🐍 **Python** | 3.13+ | |
 
 ---
 
@@ -163,7 +164,7 @@ If you remember only *one* picture, remember this:
 
 ## 🔧 **Dynamic MCP Integration**
 
-Create `.mcp.json` at project root:
+Copy `.mcp.example.json` to `.mcp.json` at the project root (it's git-ignored) and edit it:
 
 ```json
 {
@@ -195,6 +196,8 @@ Create `.mcp.json` at project root:
 ## ⚙️ **Configuration**
 
 ### Environment Variables (`.env`)
+
+The full, commented list is in [`.env.example`](.env.example). The most important ones:
 
 ```env
 # ═══════════════════════════════════════════════════════════════
@@ -253,26 +256,55 @@ DEBUG=false
 
 ## 🚀 **Quick Start**
 
+**Prerequisites:** Python 3.13+, [Ollama](https://ollama.com) for local models, Node.js (only if you use MCP servers via `npx`).
+
 ```bash
 # 1. Clone
-git clone https://github.com/PIRATE-E/ai-workflow-task-agent.git
-cd ai-workflow-task-agent
+git clone https://github.com/kryptonite012/AI-workflow-agent-.git
+cd AI-workflow-agent-
 
-# 2. Virtual Environment
-python -m venv .venv
-.venv\Scripts\activate          # Windows
-# source .venv/bin/activate     # Linux/Mac
+# 2. Install (recommended: uv, uses the pinned uv.lock)
+uv sync
+#   — or with pip —
+# python -m venv .venv
+# .venv\Scripts\activate          # Windows
+# source .venv/bin/activate       # Linux/Mac
+# pip install -r requirements.txt
 
-# 3. Install
-pip install -r requirements.txt
+# 3. Configure
+cp .env.example .env              # then put your API key(s) in .env
+cp .mcp.example.json .mcp.json    # optional: enables MCP tools
 
-# 4. Configure
-cp .env.example .env
-# Edit .env with your API keys
+# 4. Pull the local models you configured (defaults shown)
+ollama pull llava-llama3 && ollama pull llama3.1:8b
 
 # 5. Run
-python src/main_orchestrator.py
+uv run python src/main_orchestrator.py
+# (or: python src/main_orchestrator.py inside the activated venv)
 ```
+
+> **Linux / macOS:** works out of the box. With `LOG_DISPLAY_MODE=separate_window`
+> the log viewer opens in a new terminal (gnome-terminal, konsole, xfce4-terminal,
+> xterm or Terminal.app). On a headless machine it automatically falls back to the
+> background; set `LOG_DISPLAY_MODE=file` to keep logs in `src/basic_logs/`.
+
+### 🐳 Docker
+
+```bash
+cp .env.example .env               # fill in your keys
+docker compose build
+docker compose run --rm app        # interactive CLI
+```
+
+The container talks to Ollama on the host through `host.docker.internal:11434`.
+
+### 🧪 Tests
+
+```bash
+uv run pytest tests/ --ignore=tests/_legacy
+```
+
+Some tests need a running Ollama instance, network access or a valid API key; they fail without them.
 
 ---
 
@@ -339,8 +371,11 @@ src/tools/
     ├── tool_response_manager.py
     ├── tools/
     │   ├── google_search_tool.py
-    │   ├── browser_tool.py
-    │   ├── browser_subprocess_runner.py
+    │   ├── browser_tool_main.py
+    │   ├── browser_tool/            # runner, handler, session manager
+    │   │   ├── browser_subprocess_runner.py
+    │   │   ├── runner.py
+    │   │   └── Handler.py
     │   ├── translate_tool.py
     │   ├── run_shell_command_tool.py
     │   ├── rag_search_classifier_tool.py
@@ -414,7 +449,8 @@ src/ui/
 src/utils/
 ├── open_ai_integration.py       # OpenAI/NVIDIA integration + circuit breaker
 ├── model_manager.py             # model loading/switching
-├── socket_manager.py            # socket plumbing
+├── socket_manager.py            # socket plumbing + log server launcher
+├── sound.py                     # cross-platform notification beep
 ├── error_transfer.py            # log receiver server
 ├── argument_schema_util.py
 └── listeners/
@@ -438,7 +474,12 @@ src/RAG/
 
 ```text
 tests/
-├── run_tests.py
+├── conftest.py                  # shared fixtures
+├── unit/                        # fast, isolated
+├── api/                         # OpenAI/NVIDIA integration
+├── mcp/                         # MCP manager + universal tool
+├── logging/                     # dispatcher, handlers, error transfer
+├── browser_tool/                # browser-use runner (unit + integration)
 ├── error_handling/
 ├── event_listener/
 ├── integration/
@@ -446,7 +487,8 @@ tests/
 ├── serialization/
 ├── slashcommands/
 ├── test_agent_workflow/
-└── test_browser_use/
+├── test_browser_use/
+└── _legacy/                     # deprecated, not run
 ```
 
 ---
@@ -568,6 +610,8 @@ sequenceDiagram
 ## 📄 **License**
 
 MIT License - See [LICENSE](LICENSE) for details.
+
+Based on [PIRATE-E/ai-workflow-task-agent](https://github.com/PIRATE-E/ai-workflow-task-agent) (snapshot `64cea77`, MIT).
 
 ---
 
