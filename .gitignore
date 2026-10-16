@@ -174,9 +174,11 @@ QWEN.md
 GEMINI.md
 # custom memory file
 memory.json
-.github
 # Node.js/MCP config (if not needed in root)
 package.json
 
 # End of file
 /.mcp.json
+
+# Keep the documented env template tracked
+!.env.example

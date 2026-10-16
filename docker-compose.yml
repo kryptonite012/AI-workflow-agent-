@@ -1,11 +1,19 @@
-version: '3.8'
-
 services:
   app:
-    # there is diff between build and image is that to use local Dockerfile - use build and to use prebuilt image - use image
     build: .
-    container_name: ai-workflow-task-container
-    ports:
-      - "8000:8000"
+    container_name: ai-workflow-agent
+    # Interactive CLI: keep a TTY attached (`docker compose run --rm app`)
+    stdin_open: true
+    tty: true
+    env_file:
+      - .env
+    environment:
+      # Reach Ollama running on the host machine
+      OLLAMA_HOST: http://host.docker.internal:11434
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     volumes:
       - ./src:/app/src
+      - ./basic_logs:/app/basic_logs
+      # MCP server config is optional; create .mcp.json first if you use it
+      # - ./.mcp.json:/app/.mcp.json:ro

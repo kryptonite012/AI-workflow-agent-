@@ -1,0 +1,114 @@
+{
+    "mcpServers": {
+        "github": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-github@latest"
+            ],
+            "env": {
+                "GITHUB_TOKEN": "%GITHUB_TOKEN%"
+            },
+            "disabled": false,
+            "autoApprove": [
+                "search_repositories",
+                "get_file_contents",
+                "list_commits",
+                "list_issues"
+            ]
+        },
+        "git": {
+            "command": "uvx",
+            "args": [
+                "mcp-server-git"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "git_log",
+                "git_status",
+                "git_diff"
+            ]
+        },
+        "filesystem-development": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem@latest",
+                "C:\\Users\\pirat\\PycharmProjects\\AI_llm",
+                "C:\\Users\\pirat\\PycharmProjects"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "read_file",
+                "read_text_file",
+                "read_multiple_files",
+                "list_directory",
+                "directory_tree",
+                "get_file_info",
+                "search_files"
+            ]
+        },
+        "filesystem-documents": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-filesystem@latest",
+                "C:\\Users\\pirat\\Documents",
+                "C:\\Users\\pirat\\Desktop"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "read_file",
+                "read_text_file",
+                "list_directory",
+                "directory_tree"
+            ]
+        },
+        "memory": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-memory@latest"
+            ],
+            "disabled": false,
+            "autoApprove": [
+                "create_entities",
+                "create_relations",
+                "add_observations",
+                "read_graph",
+                "search_nodes",
+                "open_nodes"
+            ]
+        },
+        "puppeteer": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "@modelcontextprotocol/server-puppeteer@latest"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "puppeteer_navigate",
+                "puppeteer_screenshot"
+            ]
+        },
+        "sentry": {
+            "command": "npx",
+            "args": [
+                "-y",
+                "mcp-remote@latest",
+                "https://mcp.sentry.dev/mcp"
+            ],
+            "env": {},
+            "disabled": false,
+            "autoApprove": [
+                "mcp_sentry_whoami",
+                "mcp_sentry_find_organizations"
+            ]
+        }
+    }
+}
