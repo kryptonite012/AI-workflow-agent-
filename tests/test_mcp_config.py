@@ -1,3 +1,4 @@
+import pytest
 #!/usr/bin/env python3
 """
 Simple test to check what MCP servers are already configured.
@@ -104,6 +105,7 @@ def check_existing_mcp_servers():
         return False
 
 
+@pytest.mark.live
 def test_server_startup():
     """Test starting the configured servers."""
     print("\n🚀 Testing server startup...")

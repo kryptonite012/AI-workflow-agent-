@@ -38,6 +38,7 @@ class TestFullLifecycle:
             else:
                 raise
 
+    @pytest.mark.live
     @pytest.mark.asyncio
     async def test_runner_full_flow_with_placeholders(self, minimal_config):
         """Test full Runner.run() flow (all phases have placeholders)."""

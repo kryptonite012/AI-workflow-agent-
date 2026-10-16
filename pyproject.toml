@@ -173,3 +173,10 @@ lint.select = ["PTH", "ASYNC", "UP028"]
 
 [tool.pytest.ini_options]
 asyncio_mode = "auto"
+testpaths = ["tests"]
+# Live tests need Ollama/an API key, a real browser or npx MCP servers; run them with `pytest -m live`
+addopts = "-m 'not live' --ignore=tests/_legacy"
+markers = [
+    "network: needs real internet access (not mocked)",
+    "live: needs running services (LLM, real browser, npx MCP servers)",
+]

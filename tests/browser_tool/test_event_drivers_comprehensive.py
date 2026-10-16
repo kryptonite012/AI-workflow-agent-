@@ -50,7 +50,7 @@ def config(tmp_path):
 def runner(config):
     """Create test Runner instance."""
     # Reset singleton for testing
-    Runner._Runner__instance = None
+    Runner.instance = None
     return Runner(config)
 
 
@@ -112,6 +112,7 @@ class TestPreRequirementsDriver:
         assert hasattr(driver_class, 'huge_error')
         assert driver_class.huge_error is True
 
+    @pytest.mark.network
     @pytest.mark.asyncio
     async def test_check_internet_success(self, handler, runner, bus):
         """check_internet should succeed when internet is available."""
@@ -215,7 +216,7 @@ class TestOnRunningDriver:
         driver = handler.get(runner, HandlerEnums.ON_RUNNING)
 
         # Inject mock agent
-        runner._Runner__agent = mock_agent
+        runner.agent = mock_agent
 
         result = await driver.run_agent()
 
@@ -250,7 +251,7 @@ class TestOnCompleteDriver:
         # Simulate agent result
         mock_result = MagicMock()
         mock_result.final_result.return_value = "Test final result"
-        runner._Runner__agent_result = mock_result
+        runner.agent_result = mock_result
 
         result = await driver.extract_final_result()
 
@@ -264,11 +265,11 @@ class TestOnCompleteDriver:
             query="Test",
             file_path=tmp_path / "result.json"
         )
-        Runner._Runner__instance = None
+        Runner.instance = None
         runner = Runner(config)
 
         driver = handler.get(runner, HandlerEnums.ON_COMPLETE)
-        runner._Runner__final_result = "Test result content"
+        runner.final_result = "Test result content"
 
         result = await driver.write_result_to_file()
 
@@ -301,7 +302,7 @@ class TestOnExceptionDriver:
         driver = handler.get(runner, HandlerEnums.ON_EXCEPTION)
 
         # Store an exception
-        runner._Runner__last_exception = ValueError("Test error")
+        runner.last_exception = ValueError("Test error")
 
         result = await driver.log_exception()
 
@@ -316,11 +317,11 @@ class TestOnExceptionDriver:
             query="Test",
             file_path=tmp_path / "error.json"
         )
-        Runner._Runner__instance = None
+        Runner.instance = None
         runner = Runner(config)
 
         driver = handler.get(runner, HandlerEnums.ON_EXCEPTION)
-        runner._Runner__last_exception = RuntimeError("Critical failure")
+        runner.last_exception = RuntimeError("Critical failure")
 
         result = await driver.write_error_to_file()
 
@@ -355,13 +356,12 @@ class TestTeardownDriver:
 
     @pytest.mark.asyncio
     async def test_close_agent(self, handler, runner, mock_agent, bus):
-        """close_agent should close the agent."""
+        """The private close-agent step should close the agent."""
         driver = handler.get(runner, HandlerEnums.TEAR_DOWN)
-        runner._Runner__agent = mock_agent
+        runner.agent = mock_agent
 
-        result = await driver.close_agent()
+        await driver._TeardownDriver__close_agent()
 
-        assert result['agent_closed'] is True
         mock_agent.close.assert_called_once()
 
     @pytest.mark.asyncio
@@ -390,7 +390,7 @@ class TestRunnerIntegration:
             headless=True,
             keep_alive=False
         )
-        Runner._Runner__instance = None
+        Runner.instance = None
         runner = Runner(config)
 
         # We can't run full flow without real browser, but PRE_REQUIREMENTS should work

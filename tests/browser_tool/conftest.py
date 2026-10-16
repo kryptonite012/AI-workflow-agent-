@@ -61,6 +61,29 @@ def handler():
     return Handler()
 
 
+@pytest.fixture(autouse=True)
+def reset_runner_singleton():
+    """Runner is a singleton; give every test a fresh one."""
+    Runner.instance = None
+    yield
+    Runner.instance = None
+
+
+@pytest.fixture(autouse=True)
+def offline_internet_check(request, monkeypatch):
+    """Unit tests must not depend on network access.
+
+    Tests marked with @pytest.mark.network keep the real connectivity check.
+    """
+    if request.node.get_closest_marker("network"):
+        return
+    monkeypatch.setattr(
+        events_drivers.PreRequirementsCustomEvent,
+        "check_internet",
+        lambda self: {"internet": "connected"},
+    )
+
+
 @pytest.fixture
 def runner(minimal_config):
     """Create Runner instance with minimal config."""

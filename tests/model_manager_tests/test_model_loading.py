@@ -97,7 +97,7 @@ class TestModelManagerLoading(unittest.TestCase):
         ModelManager.load_model(settings.DEFAULT_MODEL)
 
         # Try to load same model again; verify it doesn't crash and emits an 'already loaded' log
-        with patch("src.ui.diagnostics.debug_helpers.debug_info") as mock_debug_info:
+        with patch("src.utils.model_manager.debug_info") as mock_debug_info:
             ModelManager.load_model(settings.DEFAULT_MODEL)
 
             # We don't rely on exact formatting, just that the message indicates the condition.

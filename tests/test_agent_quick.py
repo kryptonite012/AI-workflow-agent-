@@ -1,3 +1,4 @@
+import pytest
 #!/usr/bin/env python3
 """
 Quick test to verify the agent mode is working properly.
@@ -20,6 +21,7 @@ from pathlib import Path
 # Add project root to path
 
 
+@pytest.mark.live
 async def test_agent_workflow():
     """Test the agent workflow that was previously failing."""
     print("?? Testing Agent Mode...")

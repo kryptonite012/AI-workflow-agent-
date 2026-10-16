@@ -162,6 +162,7 @@ class TestFullLifecycleFlow:
             else:
                 raise
 
+    @pytest.mark.live
     @pytest.mark.asyncio
     async def test_runner_full_flow(self):
         """Test full Runner.run() flow (will fail until all drivers implemented)."""

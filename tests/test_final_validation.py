@@ -1,3 +1,4 @@
+import pytest
 #!/usr/bin/env python3
 """
 Final comprehensive test to validate all MCP and agent mode fixes.
@@ -21,6 +22,7 @@ from pathlib import Path
 # Add the project root to Python path
 
 
+@pytest.mark.live
 async def test_complete_agent_workflow():
     """Test the complete agent workflow that was failing."""
     print("?? Testing Complete Agent Workflow...")

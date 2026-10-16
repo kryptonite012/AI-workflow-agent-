@@ -24,9 +24,8 @@ class TestRunnerInitialization:
         assert runner1 is runner2, "Runner should be singleton"
 
     def test_runner_has_result_attribute(self, runner):
-        """Runner should have __result attribute initialized."""
-        # Access private attribute for testing
-        assert hasattr(runner, '_Runner__result')
+        """Runner should start with no result."""
+        assert runner.result is None
 
 
 class TestRunnerLifecycle:
@@ -34,22 +33,31 @@ class TestRunnerLifecycle:
 
     @pytest.mark.asyncio
     async def test_runner_executes_pre_requirements(self, minimal_config):
-        """Runner should execute ON_PRE_REQUIREMENTS phase."""
+        """Runner should execute every lifecycle phase in order."""
+        from unittest.mock import patch, AsyncMock, MagicMock
         from src.tools.lggraph_tools.tools.browser_tool.runner import Runner
+        from src.tools.lggraph_tools.tools.browser_tool.Handler import HandlerEnums
 
         runner = Runner(minimal_config)
+        phases = []
 
-        # Mock to avoid full run
-        from unittest.mock import patch, AsyncMock
+        def get_driver(_runner, event):
+            phases.append(event)
+            return MagicMock(execute=AsyncMock(return_value={}))
 
-        with patch.object(runner, f'_Runner__event_handler') as mock_handler:
-            mock_handler.get = lambda r, e: AsyncMock(execute=AsyncMock(return_value={}))
+        with patch("src.tools.lggraph_tools.tools.browser_tool.runner.Handler") as mock_handler_cls:
+            mock_handler_cls.return_value.get.side_effect = get_driver
+            result = await runner.run()
 
-            try:
-                await runner.run()
-            except AttributeError:
-                # Expected - we're testing partial flow
-                pass
+        assert phases == [
+            HandlerEnums.ON_PRE_REQUIREMENTS,
+            HandlerEnums.SET_UP,
+            HandlerEnums.ON_START,
+            HandlerEnums.ON_RUNNING,
+            HandlerEnums.ON_COMPLETE,
+            HandlerEnums.TEAR_DOWN,
+        ]
+        assert result["status"] == "completed"
 
     @pytest.mark.asyncio
     async def test_runner_handles_exception(self, minimal_config):

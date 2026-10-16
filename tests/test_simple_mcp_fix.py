@@ -1,3 +1,4 @@
+import pytest
 #!/usr/bin/env python3
 """
 Simple test for MCP tool mapping fix.
@@ -20,6 +21,7 @@ from pathlib import Path
 # Add the project root to Python path
 
 
+@pytest.mark.live
 def test_tool_mapping():
     """Test the tool-to-server mapping fix."""
     print("🔧 Testing Tool-to-Server Mapping Fix...")

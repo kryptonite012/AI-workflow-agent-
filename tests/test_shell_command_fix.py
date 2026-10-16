@@ -3,6 +3,7 @@
 Test script to verify shell command fixes and error routing.
 """
 
+import os
 import sys
 from pathlib import Path
 
@@ -82,7 +83,8 @@ def test_shell_command_fixes():
     # Test 4: Command with no output
     print("\n4. Testing command with no output:")
     try:
-        result = run_shell_command("echo. > nul")  # Windows command with no output
+        # Command with no output (cmd.exe on Windows, POSIX shell elsewhere)
+        result = run_shell_command("echo. > nul" if os.name == "nt" else "true")
         print(f"   Result: '{result}'")
     except Exception as e:
         RichTracebackManager.handle_exception(e, context="Test 4: No Output Command")
