@@ -102,6 +102,7 @@ class FAILURE_CONTEXT(BaseModel):
                                                                     description="History of all recovery strategies attempted with outcomes")  # <-- NEW FIELD
     # Cooldown timestamp to avoid tight retry loops
     next_attempt_timestamp: str | None = Field(default=None, description="Earliest time allowed for next retry")
+    recovery_attempts: int = Field(default=0, ge=0, description="Times the error fallback node has handled this task")
 
 
 class subAgent_CONTEXT(BaseModel):
@@ -871,6 +872,8 @@ class AgentCoreHelpers:
                                          "estimated_success_probability", 0),
                                      "reasoning": strategy_result.get("reasoning", "No reasoning provided")})
 
+                # The caller reads the strategy from this dict, so store the validated value
+                strategy_result["recovery_strategy"] = recovery_strategy
                 return strategy_result
 
             except Exception as e:
@@ -1223,6 +1226,11 @@ class AgentGraphCore:
     The system embodies enterprise-grade reliability while maintaining the flexibility
     to handle abstract, complex goals through intelligent decomposition and execution.
     """
+
+    # Limits before error fallback abandons a task (prevents classifier <-> fallback livelock):
+    # consecutive fallback runs without a new execution, and total failed executions
+    MAX_RECOVERY_ATTEMPTS = 3
+    MAX_TASK_FAILURES = 5
 
     # TODO we need to fix the debugs logs and user displaying logs
     # TODO we need to fix ~updated task thing and iteration to find the current task in the task list
@@ -2161,23 +2169,44 @@ class AgentGraphCore:
         if not current_task or not current_task.failure_context:
             return {"tasks": updated_tasks, "executed_nodes": state.executed_nodes + ["subAGENT_error_fallback"]}
 
+        def give_up(reason: str) -> dict:
+            # 'failed' always routes back here, so a task we cannot recover is skipped
+            # (terminal for the planner/finalizer) instead of looping until the recursion limit
+            current_task.status = "skip"
+            if current_task.execution_context is None:
+                current_task.execution_context = EXECUTION_CONTEXT(tool_name=current_task.tool_name, parameters={})
+            current_task.execution_context.goal_achieved = False
+            current_task.execution_context.result = f"⏭️ Task abandoned after failed recovery: {reason}"
+            current_task.execution_context.analysis = (
+                f"Task failed ({current_task.failure_context.error_message}) and could not be recovered: {reason}"
+            )
+            debug_warning("Error Fallback", f"Giving up on task {current_task_id}: {reason}",
+                          metadata={"function name": "__subAGENT_error_fallback", "task_id": current_task_id})
+            return {"tasks": updated_tasks, "executed_nodes": state.executed_nodes + ["subAGENT_error_fallback"]}
+
+        if current_task.failure_context.recovery_attempts >= cls.MAX_RECOVERY_ATTEMPTS:
+            return give_up(f"{current_task.failure_context.recovery_attempts} recovery attempts exhausted")
+        if current_task.failure_context.fail_count > cls.MAX_TASK_FAILURES:
+            return give_up(f"task failed {current_task.failure_context.fail_count} times")
+        current_task.failure_context.recovery_attempts += 1
+
         # todo here the enhancement start to use the new helper
         # 1. DELEGATE to the new, intelligent helper
         recovery_decision = AgentCoreHelpers.EnhancedErrorFallbackHelpers.decide_recovery_strategy(current_task, state)
         strategy = recovery_decision.get("recovery_strategy", None)  # <-- Use the strategy from the helper
         # Canonicalize strategy names from LLM to internal enums
         if not strategy:
-            current_task.status = "failed"
+            reasoning = recovery_decision.get("reasoning", "No viable recovery strategy identified.")
             current_task.failure_context.strategy_history.append(
                 FAILURE_CONTEXT_STRATEGY(
                     recovery_strategy="NO_STRATEGY",
-                    reasoning=recovery_decision.get("reasoning", "No viable recovery strategy identified."),
+                    reasoning=reasoning,
                     outcome="NOT_APPLIED",
                     details={"description": current_task.description,
                              "error_message": getattr(current_task.failure_context, "error_message", None)}
                 )
             )
-            return {"tasks": updated_tasks, "executed_nodes": state.executed_nodes + ["subAGENT_error_fallback"]}
+            return give_up(reasoning)
         # 2. ACT on the strategic decision
         try:
             if strategy == "PARAMETER_REPAIR":
