@@ -301,10 +301,11 @@ The container talks to Ollama on the host through `host.docker.internal:11434`.
 ### 🧪 Tests
 
 ```bash
-uv run pytest tests/ --ignore=tests/_legacy
+uv run pytest            # deterministic suite (what CI runs); LLM and tools are mocked
+uv run pytest -m live    # live tests: need Ollama/API key, a real browser, or npx MCP servers
 ```
 
-Some tests need a running Ollama instance, network access or a valid API key; they fail without them.
+`tests/_legacy` is excluded. Tests marked `network` need internet access and skip without it.
 
 ---
 
