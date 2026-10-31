@@ -180,3 +180,4 @@ package.json
 
 # End of file
 /.mcp.json
+!.env.example

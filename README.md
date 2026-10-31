@@ -263,8 +263,9 @@ python -m venv .venv
 .venv\Scripts\activate          # Windows
 # source .venv/bin/activate     # Linux/Mac
 
-# 3. Install
-pip install -r requirements.txt
+# 3. Install (uv, recommended: uses the committed uv.lock)
+uv sync
+# or: pip install -e .
 
 # 4. Configure
 cp .env.example .env
@@ -272,6 +273,16 @@ cp .env.example .env
 
 # 5. Run
 python src/main_orchestrator.py
+```
+
+
+> **Repository status:** this repository currently contains the packaging files (`pyproject.toml`, `uv.lock`, Docker setup) and the browser-tool subprocess runner (`b_sub_r.py`). The application package `src/` still needs to be pushed before the app or the Docker image can run.
+
+### Docker
+
+```bash
+cp .env.example .env
+docker compose up --build
 ```
 
 ---
